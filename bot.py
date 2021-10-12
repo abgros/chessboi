@@ -56,7 +56,7 @@ async def on_message(message):
     game = games_dict.get(message.channel.id, None)
     
     if message_text == '--help':
-        await message.channel.send("**Commands:** \n--game \n--move \n--display \n--resign")
+        await message.channel.send("**Commands:** \n--game [variant] [@opponent] (start a game, you play as white)\n--move\n--display (displays position information)\n--resign\n--offerdraw\n--acceptdraw")
         return
 
     if message_text.startswith('--game '):
@@ -125,6 +125,7 @@ async def on_message(message):
         img_name = 'board_' + str(message.channel.id) + '.png'
         await message.channel.send(file=discord.File(game.render(img_name)))
         await message.channel.send(f"Variant: **{game.variant}**" +
+                                   f"\nPosition: {game.fen()}" +
                                    f"\nMoves so far: {' '.join(game.get_moves())}" +
                                    f"\nOpponents: **{game.wplayer}** vs **{game.bplayer}**" +
                                    f"\nIt's **{game.turn()}** to move." +
@@ -146,7 +147,7 @@ async def on_message(message):
         await message.channel.send("You're not playing!")
         return
 
-    if message_text == '--drawoffer':
+    if message_text == '--offerdraw':
         if not game:
             await message.channel.send("No game is active.")
             return
