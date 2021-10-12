@@ -64,7 +64,7 @@ class Game():
     def make_move(self, san_move):
         legal_moves = sf.legal_moves(self.variant, self.fen(), [])
         for move in legal_moves:
-            if sf.get_san(self.variant, self.fen(), move) == san_move:
+            if sf.get_san(self.variant, self.fen(), move).lower() == san_move.lower():
                 self.moves += [move]
         self.cancel_offers()
 
