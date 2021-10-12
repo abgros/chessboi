@@ -87,7 +87,9 @@ async def on_message(message):
         games_dict[message.channel.id] = Game(str(message.channel.id), username, str(opponent), variant, [])
         game = games_dict[message.channel.id]
         img_name = 'board_' + str(message.channel.id) + '.png'
-        await message.channel.send(f"Game started of: **{variant}**")
+        await message.channel.send(f"Game started of: **{variant}**" +
+                                   f"\nOpponents: **{game.wplayer}** vs **{game.bplayer}**"
+                                   )
         await message.channel.send(file=discord.File(game.render(img_name)))
         return
 
@@ -97,9 +99,9 @@ async def on_message(message):
             return
             
         if (username == game.wplayer and game.turn() == "White") or (username == game.bplayer and game.turn() == "Black"):
-            move = message_text.split()[1]
+            move = message_text.split()[1].lower()
 
-            if move in game.legal_moves():
+            if move in [i.lower() for i in game.legal_moves()]:
                 games_dict[message.channel.id].make_move(move)
                 
                 if (game.ended() == "Win" and game.turn() == "White") or (game.ended() == "Loss" and game.turn() == "Black"):
@@ -112,7 +114,7 @@ async def on_message(message):
                     await game_over(message, None, game.get_moves(), "1/2-1/2")
 
                 else:
-                    await message.channel.send(f"Made move: **{move}**" +
+                    await message.channel.send(f"Made move: **{game.get_moves()[-1]}**" +
                                                f"\nIt's **{game.turn()}** to move."
                                                )
                 
