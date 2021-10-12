@@ -43,3 +43,56 @@ pieceDemotion = true
 mandatoryPiecePromotion = true
 dropPromoted = true
 castling = false
+
+[twokings:antichess]
+maxRank = 10
+maxFile = 10
+mustCapture = false
+extinctionValue = loss
+extinctionPseudoRoyal = true
+extinctionPieceTypes = k
+extinctionPieceCount = 1
+doubleStepRank = 8
+enPassantRegion = none
+promotionRank = 10
+stalemateValue = loss
+moveRepetitionIllegal = true
+promotionPieceTypes = nbrqhe
+pieceDrops = true
+mustDrop = true
+whiteDropRegion = *1
+blackDropRegion = *10
+castling = false
+flagPiece = k
+whiteFlag = *10
+blackFlag = *1
+archbishop = H
+chancellor = E
+startFen = 10/pppppppppp/10/10/10/10/10/10/PPPPPPPPPP/10[NNBBRRHEKKnnbbrrhekk] w - - 0 1
+
+[racingchess:chess]
+flagPiece = k
+whiteFlag = *8
+blackFlag = *1
+flagMove = true
+checking = false
+
+[checklesszh:crazyhouse]
+checking = false
+
+[dragonfly:chess]
+maxFile = 7
+maxRank = 7
+pocketSize = 7
+castlingKingsideFile = f
+castlingQueensideFile = b
+capturesToHand = true
+promotionRank = 7
+promotionPieceTypes = nbr
+doubleStep = false
+dropNoDoubled = p
+dropNoDoubledCount = 0
+flagPiece = k
+whiteFlag = *7
+blackFlag = *1
+startFen = rbbknnr/ppppppp/7/7/7/PPPPPPP/RBBKNNR[] w - - 0 1
