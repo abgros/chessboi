@@ -8,7 +8,6 @@ import discord
 import pyffish as sf
 
 
-
 class Game():
     def __init__(self, channel, wplayer, bplayer, variant, moves):
         self.channel = channel
