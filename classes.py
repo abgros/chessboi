@@ -39,13 +39,13 @@ class Game():
 
     def board_type(self):
         boards_dict = {
-            'chess': None,
-            'crazyhouse': None,
-            'grand': None,
-            'extinction': None,
-            'grand': None,
+            'chess': "checkerboard",
+            'crazyhouse': "checkerboard",
+            'grand': "checkerboard",
+            'extinction': "checkerboard",
+            'grand': "checkerboard",
 
-            'chennis': (244, 191, 87),
+            'chennis': "custom",
             'mounted': (153, 174, 194)
         }
         return boards_dict[self.variant]
