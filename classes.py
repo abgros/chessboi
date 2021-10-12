@@ -52,25 +52,22 @@ class Game():
 
     def render(self, img_name):
         upside_down = self.turn() == "Black"
-        fen = sf.get_fen(self.variant, sf.start_fen(self.variant), self.moves)
         lastmove = None
         if self.moves:
             lastmove = self.moves[-1]
-        render_board(fen, img_name, self.piece_type(), lastmove, upside_down, self.board_type())
+        render_board(self.fen(), img_name, self.piece_type(), lastmove, upside_down, self.board_type())
         return img_name
     
     def make_move(self, san_move):
-        fen = sf.get_fen(self.variant, sf.start_fen(self.variant), self.moves)
-        legal_moves = sf.legal_moves(self.variant, fen, [])
+        legal_moves = sf.legal_moves(self.variant, self.fen(), [])
         for move in legal_moves:
-            if sf.get_san(self.variant, fen, move) == san_move:
+            if sf.get_san(self.variant, self.fen(), move) == san_move:
                 self.moves += [move]
         self.cancel_offers()
 
     def legal_moves(self):
-        fen = sf.get_fen(self.variant, sf.start_fen(self.variant), self.moves)
-        uci_moves = sf.legal_moves(self.variant, fen, [])
-        return [sf.get_san(self.variant, fen, move) for move in uci_moves]
+        uci_moves = sf.legal_moves(self.variant, self.fen(), [])
+        return [sf.get_san(self.variant, self.fen(), move) for move in uci_moves]
 
     def get_moves(self):
         return sf.get_san_moves(self.variant, sf.start_fen(self.variant), self.moves)
@@ -78,7 +75,10 @@ class Game():
     def cancel_offers(self):
         self.w_offered_draw = False
         self.b_offered_draw = False
-        
+
+    def fen(self):
+        return sf.get_fen(self.variant, sf.start_fen(self.variant), self.moves)
+    
     def ended(self):
         if len(self.legal_moves()) == 0:
             result = sf.game_result(self.variant, sf.start_fen(self.variant), self.moves)
