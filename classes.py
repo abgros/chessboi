@@ -28,9 +28,11 @@ class Game():
     def piece_type(self):
         sets_dict = {
             'chess': 'chess',
-            'crazyhouse': 'chess',
-            'grand': 'chess',
             'extinction': 'chess',
+            'twokings': 'chess',
+            'racingchess': 'chess',
+            'checklesszh': 'chess',
+            'dragonfly': 'chess',
 
             'chennis': 'chennis',
             'mounted': 'mounted'
@@ -39,13 +41,14 @@ class Game():
 
     def board_type(self):
         boards_dict = {
-            'chess': "checkerboard",
-            'crazyhouse': "checkerboard",
-            'grand': "checkerboard",
-            'extinction': "checkerboard",
-            'grand': "checkerboard",
+            'chess': 'checkerboard',
+            'extinction': 'checkerboard',
+            'twokings': 'checkerboard',
+            'racingchess': 'checkerboard',
+            'checklesszh': 'checkerboard',
+            'dragonfly': 'checkerboard', 
 
-            'chennis': "custom",
+            'chennis': 'custom',
             'mounted': (153, 174, 194)
         }
         return boards_dict[self.variant]
