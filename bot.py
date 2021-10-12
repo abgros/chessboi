@@ -18,7 +18,7 @@ with open("variantsfile.txt", "r") as f:
     
 sf.load_variant_config(ini_text)
 
-allowed_variants = ['chess', 'crazyhouse', 'grand', 'chennis', 'extinction', 'ridgerelay']
+allowed_variants = ['chess', 'crazyhouse', 'grand', 'chennis', 'extinction', 'mounted']
 
 
 async def game_over(message, winner, moves, result):
@@ -193,7 +193,7 @@ async def on_message(message):
         await message.channel.send("No draw offers active.")
         return
 
-@client.event
+#@client.event
 async def on_error(event, *args, **kwargs):
     with open('err.log', 'a') as log:
         if event == 'on_message':
