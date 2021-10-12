@@ -18,7 +18,8 @@ with open("variantsfile.txt", "r") as f:
     
 sf.load_variant_config(ini_text)
 
-allowed_variants = ['chess', 'crazyhouse', 'grand', 'chennis', 'extinction', 'mounted']
+allowed_variants = ['chess', 'checklesszh', 'racingchess', 'dragonfly',
+                    'chennis', 'extinction', 'mounted', 'twokings']
 
 
 async def game_over(message, winner, moves, result):
@@ -56,7 +57,14 @@ async def on_message(message):
     game = games_dict.get(message.channel.id, None)
     
     if message_text == '--help':
-        await message.channel.send("**Commands:** \n--game [variant] [@opponent] (start a game, you play as white)\n--move\n--display (displays position information)\n--resign\n--offerdraw\n--acceptdraw")
+        await message.channel.send("**Commands:** \n--game [variant] [@opponent] (start a game, you play as white)" + 
+                                   "\n--move" +
+                                   "\n--display (displays position information)" +
+                                   "\n--resign" +
+                                   "\n--offerdraw" +
+                                   "\n--acceptdraw" +
+                                   "\n\n**Available variants:** \n" + (', ').join(allowed_variants)
+                                   )
         return
 
     if message_text.startswith('--game '):
@@ -73,7 +81,7 @@ async def on_message(message):
         variant = message_text.split()[1]
 
         if variant not in allowed_variants:
-            await message.channel.send(f"**Available variants:** " + ' '.join(allowed_variants))
+            await message.channel.send("Variant not recognized.")
             return
 
         games_dict[message.channel.id] = Game(str(message.channel.id), username, str(opponent), variant, [])
@@ -193,7 +201,7 @@ async def on_message(message):
         await message.channel.send("No draw offers active.")
         return
 
-#@client.event
+@client.event
 async def on_error(event, *args, **kwargs):
     with open('err.log', 'a') as log:
         if event == 'on_message':
