@@ -33,7 +33,7 @@ class Game():
             'extinction': 'chess',
 
             'chennis': 'chennis',
-            'ridgerelay': 'ridgerelay'
+            'mounted': 'mounted'
         }
         return sets_dict[self.variant]
 
@@ -46,7 +46,7 @@ class Game():
             'grand': None,
 
             'chennis': (244, 191, 87),
-            'ridgerelay': (153, 174, 194)
+            'mounted': (153, 174, 194)
         }
         return boards_dict[self.variant]
 
