@@ -14,6 +14,7 @@ LASTMOVE_DARK = (170, 162, 58)
 ALPHABET = list("abcdefghijklmnopqrstuvwxyz")
 SQ_SIZE = 100
 
+
 def flatten(some_list):
     output = []
     for item in some_list:
@@ -59,7 +60,7 @@ def in_hand(fen):
     return (whitepcs, blackpcs)
 
 
-def render_board(fen, img_name, folder='chess', lastmove=None, upside_down=False, monochrome=None):
+def render_board(fen, img_name, folder='chess', lastmove=None, upside_down=False, board_type=None):
     pos = fen_to_array(fen, upside_down)
     b_height = len(pos)
     b_width = len(pos[0])
@@ -77,14 +78,7 @@ def render_board(fen, img_name, folder='chess', lastmove=None, upside_down=False
     drw = ImageDraw.Draw(img, 'RGBA')
 
     # BOARD
-    if monochrome:
-        border = round(SQ_SIZE*0.01)
-        drw.rectangle([0, 0, b_width*SQ_SIZE, b_height*SQ_SIZE], fill=monochrome)
-        for i in range(b_height-1):
-            drw.rectangle([0, SQ_SIZE*(i+1) - border, b_width*SQ_SIZE, SQ_SIZE*(i+1) + border], fill=BLACK)            
-        for i in range(b_height-1):
-            drw.rectangle([SQ_SIZE*(i+1) - border, 0, SQ_SIZE*(i+1) + border, b_height*SQ_SIZE], fill=BLACK)                        
-    else:
+    if board_type == "checkerboard":
         for i in range(b_height):
             for j in range(b_width):
                 if (i+j) % 2 == 0:
@@ -92,6 +86,20 @@ def render_board(fen, img_name, folder='chess', lastmove=None, upside_down=False
                 else:
                     drw.rectangle([j*SQ_SIZE, i*SQ_SIZE, (j+1)*SQ_SIZE, (i+1)*SQ_SIZE], fill=DARK)
 
+    elif board_type == "custom":
+        board = Image.open(f'assets\\{folder}\\board.png')
+        if upside_down:
+            board.rotate(180)
+        img.paste(board, (0, 0))
+        
+    else:
+        border = round(SQ_SIZE*0.01)
+        drw.rectangle([0, 0, b_width*SQ_SIZE, b_height*SQ_SIZE], fill=board_type)
+        for i in range(b_height-1):
+            drw.rectangle([0, SQ_SIZE*(i+1) - border, b_width*SQ_SIZE, SQ_SIZE*(i+1) + border], fill=BLACK)            
+        for i in range(b_height-1):
+            drw.rectangle([SQ_SIZE*(i+1) - border, 0, SQ_SIZE*(i+1) + border, b_height*SQ_SIZE], fill=BLACK)                        
+    
     # LETTERS
     font_size = SQ_SIZE*0.2
     font = ImageFont.truetype(r'C:\Windows\Fonts\ARLRDBD.ttf', round(font_size))
@@ -115,7 +123,7 @@ def render_board(fen, img_name, folder='chess', lastmove=None, upside_down=False
         for highlight in findall(r'[a-z]\d+', lastmove):
             coords = square_to_coords(highlight, b_width, b_height, upside_down)
             highlight_coords = coords + [i+100 for i in coords]
-            if monochrome:
+            if board_type == "checkerboard":
                 drw.rectangle(highlight_coords, fill=GREEN)
             else:
                 if sum(coords) % (SQ_SIZE*2) == 0:
