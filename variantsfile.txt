@@ -1,4 +1,4 @@
-[ridgerelay]
+[mounted]
 maxRank = 7
 maxFile = 7
 pieceDrops = true
