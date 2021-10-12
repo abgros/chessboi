@@ -89,4 +89,3 @@ class Game():
             elif result == -sf.VALUE_MATE:
                 return "Loss"
         return False
-        
