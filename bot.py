@@ -10,7 +10,7 @@ import pyffish as sf
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
-client = discord.Client(activity=discord.Game(name='try --help'))
+client = discord.Client(activity=discord.Game(name='--help'))
 games_dict = {}
 
 with open("variantsfile.txt", "r") as f:
@@ -19,7 +19,7 @@ with open("variantsfile.txt", "r") as f:
 sf.load_variant_config(ini_text)
 
 allowed_variants = ['chess', 'checklesszh', 'racingchess', 'dragonfly',
-                    'chennis', 'extinction', 'mounted', 'twokings']
+                    'chennis', 'extinction', 'mounted', 'twokings', 'pandemonium']
 
 
 async def game_over(message, winner, moves, result):
@@ -60,14 +60,15 @@ async def on_message(message):
         await message.channel.send("**Commands:** \n--game [variant] [@opponent] (start a game, you play as white)" + 
                                    "\n--move" +
                                    "\n--display (displays position information)" +
-                                   "\n--resign" +
                                    "\n--offerdraw" +
                                    "\n--acceptdraw" +
+                                   "\n--resign" +
+                                   "\nAliases: --g, --m, --d, --od, --ad" + 
                                    "\n\n**Available variants:** \n" + (', ').join(allowed_variants)
                                    )
         return
 
-    if message_text.startswith('--game '):
+    if message_text.startswith('--game ') or message_text.startswith('--g '):
         try:
             opponent = await client.fetch_user(int(message_text.split()[2][3:-1]))
         except:
@@ -93,15 +94,15 @@ async def on_message(message):
         await message.channel.send(file=discord.File(game.render(img_name)))
         return
 
-    if message_text.startswith('--move '):
+    if message_text.startswith('--move ') or message_text.startswith('--m '):
         if not game:
             await message.channel.send("No game is active.")
             return
             
         if (username == game.wplayer and game.turn() == "White") or (username == game.bplayer and game.turn() == "Black"):
-            move = message_text.split()[1].lower()
-
-            if move in [i.lower() for i in game.legal_moves()]:
+            move = game.closest_san(message_text.split()[1])
+            
+            if move:
                 games_dict[message.channel.id].make_move(move)
                 
                 if (game.ended() == "Win" and game.turn() == "White") or (game.ended() == "Loss" and game.turn() == "Black"):
@@ -122,13 +123,13 @@ async def on_message(message):
                 await message.channel.send(file=discord.File(game.render(img_name)))
                 return
             
-            await message.channel.send("Not a legal move.")
+            await message.channel.send("Invalid move.")
             return
         
         await message.channel.send("It's not your turn!")
         return
 
-    if message_text == '--display':
+    if message_text == '--display' or message_text == '--d':
         if not game:
             await message.channel.send("No game is active.")
             return
@@ -157,7 +158,7 @@ async def on_message(message):
         await message.channel.send("You're not playing!")
         return
 
-    if message_text == '--offerdraw':
+    if message_text == '--offerdraw' or message_text == '--od':
         if not game:
             await message.channel.send("No game is active.")
             return
@@ -181,7 +182,7 @@ async def on_message(message):
         await message.channel.send("You're not playing!")
         return
 
-    if message_text == '--acceptdraw':
+    if message_text == '--acceptdraw' or message_text == '--ad':
         if not game:
             await message.channel.send("No game is active.")
             return
