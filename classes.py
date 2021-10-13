@@ -34,6 +34,7 @@ class Game():
             'checklesszh': 'chess',
             'dragonfly': 'chess',
 
+            'pandemonium': 'pandemonium',
             'chennis': 'chennis',
             'mounted': 'mounted'
         }
@@ -47,7 +48,8 @@ class Game():
             'racingchess': 'checkerboard',
             'checklesszh': 'checkerboard',
             'dragonfly': 'checkerboard', 
-
+            'pandemonium': 'checkerboard',
+            
             'chennis': 'custom',
             'mounted': (153, 174, 194)
         }
@@ -60,12 +62,30 @@ class Game():
             lastmove = self.moves[-1]
         render_board(self.fen(), img_name, self.piece_type(), lastmove, upside_down, self.board_type())
         return img_name
+
+    def closest_san(self, input_move):
+        legal = self.legal_moves()
+        legal_lower = [move.lower() for move in legal]
+        input_lower = input_move.lower()
+
+        # Try to find a unique move, case insensitive
+        if sum(i.startswith(input_lower) for i in legal_lower) == 1:
+            return legal[legal_lower.index([i for i in legal_lower if i.startswith(input_lower)][0])]
+
+        # Try to find a unique move, original case
+        if sum(i.startswith(input_move) for i in legal) == 1:
+            return legal[legal.index([i for i in legal if i.startswith(input_move)][0])]
+
+        return None
     
     def make_move(self, san_move):
         legal_moves = sf.legal_moves(self.variant, self.fen(), [])
+        
         for move in legal_moves:
-            if sf.get_san(self.variant, self.fen(), move).lower() == san_move.lower():
+            if sf.get_san(self.variant, self.fen(), move) == san_move:
                 self.moves += [move]
+                break
+            
         self.cancel_offers()
 
     def legal_moves(self):
