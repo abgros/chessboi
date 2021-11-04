@@ -3,10 +3,8 @@ from re import findall
 
 DARK = (181, 136, 99)
 LIGHT = (240, 217, 181)
-WHITE = (229, 229, 229)
 GREY = (136, 136, 136)
 BLACK = (33, 33, 33)
-MED = (244, 191, 87)
 GREEN = (128, 216, 48, 96)
 LASTMOVE_LIGHT = (205, 210, 106)
 LASTMOVE_DARK = (170, 162, 58)
@@ -60,7 +58,7 @@ def in_hand(fen):
     return (whitepcs, blackpcs)
 
 
-def render_board(fen, img_name, folder='chess', lastmove=None, upside_down=False, board_type=None):
+def render_board(fen, img_name, folder='chess', lastmove=None, upside_down=False, board_type=None, flip_pieces=False):
     pos = fen_to_array(fen, upside_down)
     b_height = len(pos)
     b_width = len(pos[0])
@@ -86,10 +84,18 @@ def render_board(fen, img_name, folder='chess', lastmove=None, upside_down=False
                 else:
                     drw.rectangle([j*SQ_SIZE, i*SQ_SIZE, (j+1)*SQ_SIZE, (i+1)*SQ_SIZE], fill=DARK)
 
+    elif isinstance(board_type, list):
+        for i in range(b_height):
+            for j in range(b_width):
+                if (i+j) % 2 == 0:
+                    drw.rectangle([j*SQ_SIZE, i*SQ_SIZE, (j+1)*SQ_SIZE, (i+1)*SQ_SIZE], fill=board_type[0])
+                else:
+                    drw.rectangle([j*SQ_SIZE, i*SQ_SIZE, (j+1)*SQ_SIZE, (i+1)*SQ_SIZE], fill=board_type[1])
+
     elif board_type == "custom":
         board = Image.open(f'assets\\{folder}\\board.png')
         if upside_down:
-            board.rotate(180)
+            board = board.rotate(180)
         img.paste(board, (0, 0))
         
     else:
@@ -123,7 +129,7 @@ def render_board(fen, img_name, folder='chess', lastmove=None, upside_down=False
         for highlight in findall(r'[a-z]\d+', lastmove):
             coords = square_to_coords(highlight, b_width, b_height, upside_down)
             highlight_coords = coords + [i+100 for i in coords]
-            if board_type == "checkerboard":
+            if board_type != "checkerboard":
                 drw.rectangle(highlight_coords, fill=GREEN)
             else:
                 if sum(coords) % (SQ_SIZE*2) == 0:
@@ -136,6 +142,8 @@ def render_board(fen, img_name, folder='chess', lastmove=None, upside_down=False
         for j in range(len(pos[i])):
             if pos[i][j]:
                 piece = get_piece_img(pos[i][j], folder)
+                if flip_pieces:
+                    piece = piece.rotate(180)
                 img.paste(piece, (j*SQ_SIZE, i*SQ_SIZE), piece)
 
     # POCKET
