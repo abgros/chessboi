@@ -1,4 +1,3 @@
-from gen_board import render_board
 from re import findall
 from dotenv import load_dotenv
 from classes import Game
@@ -22,20 +21,26 @@ allowed_variants = ['chess', 'checklesszh', 'racingchess', 'dragonfly',
                     'chennis', 'extinction', 'mounted', 'twokings', 'pandemonium']
 
 
-async def game_over(message, winner, moves, result):
+async def game_over(message, result):
+    game = games_dict[message.channel.id]
+
+    if result == "White":
+        result_text = f"{game.wplayer} wins."
+        result_code = "1-0"
+    elif result == "Black":
+        result_text = f"{game.bplayer} wins."
+        result_code = "0-1"
+    elif result == "Draw":
+        result_text = "Draw."
+        result_code = "1/2-1/2"
+        
+    await message.channel.send("**GAME OVER**"
+                                f"\nResult: {result_text}"
+                                f"\nGame moves: {' '.join(game.get_moves() + [result_code])}"
+                                f"\n*(Game lasted {game.age_minutes()} minutes.)*"
+                                )
+    
     del games_dict[message.channel.id]
-    
-    if winner:
-        await message.channel.send("**GAME OVER**" +
-                                   f"\nResult: **{winner}** wins." +
-                                   f"\nGame moves: {' '.join(moves)} {result}"
-                                   )
-        return
-    
-    await message.channel.send("**GAME OVER**" +
-                               f"\nResult: Draw." +
-                               f"\nGame moves: {' '.join(moves)} {result}"
-                               )
     return
 
 
@@ -57,20 +62,23 @@ async def on_message(message):
     game = games_dict.get(message.channel.id, None)
     
     if message_text == '--help':
-        await message.channel.send("**Commands:** \n--game [variant] [@opponent] (start a game, you play as white)" + 
-                                   "\n--move" +
-                                   "\n--display (displays position information)" +
-                                   "\n--offerdraw" +
-                                   "\n--acceptdraw" +
-                                   "\n--resign" +
-                                   "\nAliases: --g, --m, --d, --od, --ad" + 
+        await message.channel.send("**Commands:** \n--game [variant] [@opponent] (start a game, you play as white)"
+                                   "\n--move"
+                                   "\n--display (displays position information)"
+                                   "\n--offerdraw"
+                                   "\n--acceptdraw"
+                                   "\n--resign"
+                                   "\n--asktakeback"
+                                   "\n--accepttakeback"
+                                   "\nAliases: --g, --m, --d, --od, --ad --tb, --atb"
                                    "\n\n**Available variants:** \n" + (', ').join(allowed_variants)
                                    )
         return
 
     if message_text.startswith('--game ') or message_text.startswith('--g '):
         try:
-            opponent = await client.fetch_user(int(message_text.split()[2][3:-1]))
+            opponent = await client.fetch_user(int(findall("\d+", message_text.split()[2])[0]))
+            
         except:
             await message.channel.send("Opponent not found.")
             return
@@ -88,7 +96,7 @@ async def on_message(message):
         games_dict[message.channel.id] = Game(str(message.channel.id), username, str(opponent), variant, [])
         game = games_dict[message.channel.id]
         img_name = 'board_' + str(message.channel.id) + '.png'
-        await message.channel.send(f"Game started of: **{variant}**" +
+        await message.channel.send(f"Game started of: **{variant}**"
                                    f"\nOpponents: **{game.wplayer}** vs **{game.bplayer}**"
                                    )
         await message.channel.send(file=discord.File(game.render(img_name)))
@@ -103,19 +111,19 @@ async def on_message(message):
             move = game.closest_san(message_text.split()[1])
             
             if move:
-                games_dict[message.channel.id].make_move(move)
+                game.make_move(move)
                 
                 if (game.ended() == "Win" and game.turn() == "White") or (game.ended() == "Loss" and game.turn() == "Black"):
-                    await game_over(message, game.wplayer, game.get_moves(), "1-0")
+                    await game_over(message, "White")
                     
                 elif (game.ended() == "Win" and game.turn() == "Black") or (game.ended() == "Loss" and game.turn() == "White"):
-                    await game_over(message, game.bplayer, game.get_moves(), "0-1")
+                    await game_over(message, "Black")
                     
                 elif game.ended() == "Draw":
-                    await game_over(message, None, game.get_moves(), "1/2-1/2")
+                    await game_over(message, "Draw")
 
                 else:
-                    await message.channel.send(f"Made move: **{game.get_moves()[-1]}**" +
+                    await message.channel.send(f"Made move: **{game.get_moves()[-1]}**"
                                                f"\nIt's **{game.turn()}** to move."
                                                )
                 
@@ -129,18 +137,18 @@ async def on_message(message):
         await message.channel.send("It's not your turn!")
         return
 
-    if message_text == '--display' or message_text == '--d':
+    if message_text in ('--display', '--d'):
         if not game:
             await message.channel.send("No game is active.")
             return
         img_name = 'board_' + str(message.channel.id) + '.png'
         await message.channel.send(file=discord.File(game.render(img_name)))
-        await message.channel.send(f"Variant: **{game.variant}**" +
-                                   f"\nPosition: {game.fen()}" +
-                                   f"\nMoves so far: {' '.join(game.get_moves())}" +
-                                   f"\nOpponents: **{game.wplayer}** vs **{game.bplayer}**" +
-                                   f"\nIt's **{game.turn()}** to move." +
-                                   f"\nLegal moves: {' '.join(game.legal_moves())}" +
+        await message.channel.send(f"Variant: **{game.variant}**"
+                                   f"\nPosition: {game.fen()}"
+                                   f"\nMoves so far: {' '.join(game.get_moves())}"
+                                   f"\nOpponents: **{game.wplayer}** vs **{game.bplayer}**"
+                                   f"\nIt's **{game.turn()}** to move."
+                                   f"\nLegal moves: {' '.join(game.legal_moves())}"
                                    f"\n*(Game started {game.age_minutes()} minutes ago.)*"
                                    )
         return
@@ -150,30 +158,30 @@ async def on_message(message):
             await message.channel.send("No game is active.")
             return 
         if username == game.wplayer:
-            await game_over(message, game.bplayer, game.get_moves(), "0-1")
+            await game_over(message, "Black")
             return
         if username == game.bplayer:
-            await game_over(message, game.wplayer, game.get_moves(), "1-0")
+            await game_over(message, "White")
             return
         await message.channel.send("You're not playing!")
         return
 
-    if message_text == '--offerdraw' or message_text == '--od':
+    if message_text in ('--offerdraw', '--od'):
         if not game:
             await message.channel.send("No game is active.")
             return
         
         if username == game.wplayer:
-            if not games_dict[message.channel.id].w_offered_draw:
-                games_dict[message.channel.id].w_offered_draw = True
+            if not game.w_offered_draw:
+                game.w_offered_draw = True
                 await message.channel.send("White offers a draw!")
                 return
             await message.channel.send("You already offered a draw.")
             return
         
         if username == game.bplayer:
-            if not games_dict[message.channel.id].b_offered_draw:
-                games_dict[message.channel.id].b_offered_draw = True
+            if not game.b_offered_draw:
+                game.b_offered_draw = True
                 await message.channel.send("Black offers a draw!")
                 return
             await message.channel.send("You already offered a draw.")
@@ -182,7 +190,7 @@ async def on_message(message):
         await message.channel.send("You're not playing!")
         return
 
-    if message_text == '--acceptdraw' or message_text == '--ad':
+    if message_text in ('--acceptdraw', '--ad'):
         if not game:
             await message.channel.send("No game is active.")
             return
@@ -191,18 +199,65 @@ async def on_message(message):
             await message.channel.send("You're not playing!")
             return
             
-        if username == game.wplayer and games_dict[message.channel.id].b_offered_draw:
+        if username == game.wplayer and game.b_offered_draw:
             await message.channel.send("White accepted the draw offer!")
-            await game_over(message, None, game.get_moves(), "1/2-1/2")
+            await game_over(message, "Draw")
             return
         
-        if username == game.bplayer and games_dict[message.channel.id].w_offered_draw:
+        if username == game.bplayer and game.w_offered_draw:
             await message.channel.send("Black accepted the draw offer!")
-            await game_over(message, None, game.get_moves(), "1/2-1/2")
+            await game_over(message, "Draw")
             return
         
         await message.channel.send("No draw offers active.")
         return
+
+    if message_text in ('--asktakeback', '--tb'):
+        if not game:
+            await message.channel.send("No game is active.")
+            return
+        
+        if username == game.wplayer:
+            if not game.w_offered_takeback:
+                game.w_offered_takeback = True
+                await message.channel.send("White asks for a takeback!")
+                return
+            await message.channel.send("You already offered a takeback.")
+            return
+        
+        if username == game.bplayer:
+            if not game.b_offered_takeback:
+                game.b_offered_takeback = True
+                await message.channel.send("Black asks for a takeback!")
+                return
+            await message.channel.send("You already offered a takeback.")
+            return
+        
+        await message.channel.send("You're not playing!")
+        return
+
+    if message_text in ('--accepttakeback', '--atb'):
+        if not game:
+            await message.channel.send("No game is active.")
+            return
+        
+        if username not in (game.wplayer, game.bplayer):
+            await message.channel.send("You're not playing!")
+            return
+            
+        if username == game.wplayer and game.b_offered_takeback:
+            await message.channel.send("White has granted a takeback: the last two moves have been undone.")
+            game.takeback_move()
+            return
+        
+        if username == game.bplayer and game.w_offered_takeback:
+            await message.channel.send("Black has granted a takeback: the last two moves have been undone.")
+            game.takeback_move()
+            return
+        
+        await message.channel.send("No takeback requests active.")
+        return
+
 
 @client.event
 async def on_error(event, *args, **kwargs):
