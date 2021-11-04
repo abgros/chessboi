@@ -1,10 +1,6 @@
 from gen_board import render_board
-from re import findall
-from dotenv import load_dotenv
 from time import time
 
-import os
-import discord
 import pyffish as sf
 
 
@@ -18,6 +14,8 @@ class Game():
         self.start = time()
         self.w_offered_draw = False
         self.b_offered_draw = False
+        self.w_offered_takeback = False
+        self.b_offered_takeback = False
         
     def age_minutes(self):
         return round((time()-self.start)/60, 2)
@@ -48,19 +46,20 @@ class Game():
             'racingchess': 'checkerboard',
             'checklesszh': 'checkerboard',
             'dragonfly': 'checkerboard', 
-            'pandemonium': 'checkerboard',
-            
+
+            'pandemonium': [(168, 200, 224), (192, 240, 255)],
             'chennis': 'custom',
-            'mounted': (153, 174, 194)
+            'mounted': [(153, 174, 194), (97, 122, 142)]
         }
         return boards_dict[self.variant]
 
     def render(self, img_name):
         upside_down = self.turn() == "Black"
+        flip_pieces = self.variant in ["pandemonium"] and upside_down
         lastmove = None
         if self.moves:
             lastmove = self.moves[-1]
-        render_board(self.fen(), img_name, self.piece_type(), lastmove, upside_down, self.board_type())
+        render_board(self.fen(), img_name, self.piece_type(), lastmove, upside_down, self.board_type(), flip_pieces)
         return img_name
 
     def closest_san(self, input_move):
@@ -95,9 +94,14 @@ class Game():
     def get_moves(self):
         return sf.get_san_moves(self.variant, sf.start_fen(self.variant), self.moves)
 
+    def takeback_move(self):
+        self.moves = self.moves[:-2]
+
     def cancel_offers(self):
         self.w_offered_draw = False
         self.b_offered_draw = False
+        self.w_offered_takeback = False
+        self.b_offered_takeback = False
 
     def fen(self):
         return sf.get_fen(self.variant, sf.start_fen(self.variant), self.moves)
