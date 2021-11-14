@@ -14,11 +14,10 @@ games_dict = {}
 
 with open("variantsfile.txt", "r") as f:
     ini_text='\n'.join(f.readlines())
-    
 sf.load_variant_config(ini_text)
 
-allowed_variants = ['chess', 'checklesszh', 'racingchess', 'dragonfly',
-                    'chennis', 'extinction', 'mounted', 'twokings', 'pandemonium']
+allowed_variants = ['chess', 'checklesszh', 'racingchess', 'dragonfly', 'shinobimirror',
+                    'chennis', 'extinction', 'mounted', 'twokings', 'pandemonium', 'chak']
 
 
 async def game_over(message, result):
@@ -52,6 +51,7 @@ async def on_ready():
         print(f"{guild.name} [{guild.id}]")
     print('')
 
+
 @client.event
 async def on_message(message):
     if message.author == client.user:
@@ -76,15 +76,14 @@ async def on_message(message):
         return
 
     if message_text.startswith('--game ') or message_text.startswith('--g '):
-        try:
-            opponent = await client.fetch_user(int(findall("\d+", message_text.split()[2])[0]))
-            
-        except:
-            await message.channel.send("Opponent not found.")
-            return
-        
         if game:
             await message.channel.send("There is already a game going on!")
+            return
+
+        try:
+            opponent = await client.fetch_user(int(findall("\d+", message_text.split()[2])[0]))      
+        except:
+            await message.channel.send("Opponent not found.")
             return
         
         variant = message_text.split()[1]
@@ -93,7 +92,7 @@ async def on_message(message):
             await message.channel.send("Variant not recognized.")
             return
 
-        games_dict[message.channel.id] = Game(str(message.channel.id), username, str(opponent), variant, [])
+        games_dict[message.channel.id] = Game(str(message.channel.id), username, str(opponent), variant)
         game = games_dict[message.channel.id]
         img_name = 'board_' + str(message.channel.id) + '.png'
         await message.channel.send(f"Game started of: **{variant}**"
@@ -112,15 +111,18 @@ async def on_message(message):
             
             if move:
                 game.make_move(move)
-                
-                if (game.ended() == "Win" and game.turn() == "White") or (game.ended() == "Loss" and game.turn() == "Black"):
-                    await game_over(message, "White")
-                    
-                elif (game.ended() == "Win" and game.turn() == "Black") or (game.ended() == "Loss" and game.turn() == "White"):
-                    await game_over(message, "Black")
-                    
-                elif game.ended() == "Draw":
-                    await game_over(message, "Draw")
+                result = game.ended()
+                turn = game.turn()
+
+                if result:
+                    if (result == "Win" and turn == "White") or (result == "Loss" and turn == "Black"):
+                        await game_over(message, "White")
+                        
+                    elif (result == "Win" and turn == "Black") or (result == "Loss" and turn == "White"):
+                        await game_over(message, "Black")
+                        
+                    elif result == "Draw":
+                        await game_over(message, "Draw")
 
                 else:
                     await message.channel.send(f"Made move: **{game.get_moves()[-1]}**"
@@ -144,7 +146,7 @@ async def on_message(message):
         img_name = 'board_' + str(message.channel.id) + '.png'
         await message.channel.send(file=discord.File(game.render(img_name)))
         await message.channel.send(f"Variant: **{game.variant}**"
-                                   f"\nPosition: {game.fen()}"
+                                   f"\nPosition: {game.fen}"
                                    f"\nMoves so far: {' '.join(game.get_moves())}"
                                    f"\nOpponents: **{game.wplayer}** vs **{game.bplayer}**"
                                    f"\nIt's **{game.turn()}** to move."
