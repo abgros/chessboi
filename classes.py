@@ -5,12 +5,13 @@ import pyffish as sf
 
 
 class Game():
-    def __init__(self, channel, wplayer, bplayer, variant, moves):
+    def __init__(self, channel, wplayer, bplayer, variant):
         self.channel = channel
         self.wplayer = wplayer
         self.bplayer = bplayer
         self.variant = variant
-        self.moves = moves
+        self.moves = []
+        self.fen = sf.start_fen(self.variant)
         self.start = time()
         self.w_offered_draw = False
         self.b_offered_draw = False
@@ -23,8 +24,8 @@ class Game():
     def turn(self):
         return ["White", "Black"][len(self.moves) % 2]
 
-    def piece_type(self):
-        sets_dict = {
+    def get_folder(self, variant):
+        folder_dict = {
             'chess': 'chess',
             'extinction': 'chess',
             'twokings': 'chess',
@@ -34,32 +35,40 @@ class Game():
 
             'pandemonium': 'pandemonium',
             'chennis': 'chennis',
-            'mounted': 'mounted'
+            'mounted': 'mounted',
+            'shinobimirror': 'shinobimirror',
+            'chak': 'chak'
         }
-        return sets_dict[self.variant]
+        return folder_dict[variant]
 
-    def board_type(self):
+    def board_type(self, variant):
         boards_dict = {
             'chess': 'checkerboard',
             'extinction': 'checkerboard',
             'twokings': 'checkerboard',
             'racingchess': 'checkerboard',
             'checklesszh': 'checkerboard',
-            'dragonfly': 'checkerboard', 
+            'dragonfly': 'checkerboard',
+            'shinobimirror': 'checkerboard',
 
             'pandemonium': [(168, 200, 224), (192, 240, 255)],
             'chennis': 'custom',
+            'chak': 'custom',
             'mounted': [(153, 174, 194), (97, 122, 142)]
         }
-        return boards_dict[self.variant]
+        return boards_dict[variant]
+
+    def flip_variant(self, variant):
+        flip_variants_list = ['pandemonium']
+        return (variant in flip_variants_list)
 
     def render(self, img_name):
         upside_down = self.turn() == "Black"
-        flip_pieces = self.variant in ["pandemonium"] and upside_down
-        lastmove = None
-        if self.moves:
-            lastmove = self.moves[-1]
-        render_board(self.fen(), img_name, self.piece_type(), lastmove, upside_down, self.board_type(), flip_pieces)
+        flip_pieces = self.flip_variant(self.variant) and upside_down
+        lastmove = self.moves[-1] if self.moves else None
+        
+        render_board(self.fen, img_name, self.get_folder(self.variant), lastmove,
+                     upside_down, self.board_type(self.variant), flip_pieces)
         return img_name
 
     def closest_san(self, input_move):
@@ -78,37 +87,41 @@ class Game():
         return None
     
     def make_move(self, san_move):
-        legal_moves = sf.legal_moves(self.variant, self.fen(), [])
+        uci_legal_moves = sf.legal_moves(self.variant, self.fen, [])
         
-        for move in legal_moves:
-            if sf.get_san(self.variant, self.fen(), move) == san_move:
+        for move in uci_legal_moves:
+            if sf.get_san(self.variant, self.fen, move) == san_move:
                 self.moves += [move]
                 break
-            
+
         self.cancel_offers()
+        self.update_fen()
 
     def legal_moves(self):
-        uci_moves = sf.legal_moves(self.variant, self.fen(), [])
-        return [sf.get_san(self.variant, self.fen(), move) for move in uci_moves]
+        uci_moves = sf.legal_moves(self.variant, self.fen, [])
+        return [sf.get_san(self.variant, self.fen, move) for move in uci_moves]
 
     def get_moves(self):
         return sf.get_san_moves(self.variant, sf.start_fen(self.variant), self.moves)
 
     def takeback_move(self):
         self.moves = self.moves[:-2]
-
+        self.update_fen()
+        
     def cancel_offers(self):
         self.w_offered_draw = False
         self.b_offered_draw = False
         self.w_offered_takeback = False
         self.b_offered_takeback = False
 
-    def fen(self):
-        return sf.get_fen(self.variant, sf.start_fen(self.variant), self.moves)
+    def update_fen(self):
+        self.fen = sf.get_fen(self.variant, sf.start_fen(self.variant), self.moves)
     
     def ended(self):
-        if len(self.legal_moves()) == 0:
-            result = sf.game_result(self.variant, sf.start_fen(self.variant), self.moves)
+        uci_legal_moves = sf.legal_moves(self.variant, self.fen, [])
+        
+        if len(uci_legal_moves) == 0:
+            result = sf.game_result(self.variant, self.fen, [])
             if result == sf.VALUE_MATE:
                 return "Win"
             elif result == sf.VALUE_DRAW:
