@@ -5,11 +5,10 @@ import pyffish as sf
 
 
 class Game():
-    def __init__(self, channel, wplayer, bplayer, variant):
-        self.channel = channel
+    def __init__(self, variant, wplayer=None, bplayer=None):
+        self.variant = variant
         self.wplayer = wplayer
         self.bplayer = bplayer
-        self.variant = variant
         self.moves = []
         self.fen = sf.start_fen(self.variant)
         self.start = time()
@@ -22,7 +21,7 @@ class Game():
         return round((time()-self.start)/60, 2)
 
     def turn(self):
-        return ["White", "Black"][len(self.moves) % 2]
+        return ["Black", "White"]["w" in self.fen.split()]
 
     def get_folder(self, variant):
         folder_dict = {
@@ -106,6 +105,7 @@ class Game():
 
     def takeback_move(self):
         self.moves = self.moves[:-2]
+        self.cancel_offers()
         self.update_fen()
         
     def cancel_offers(self):
