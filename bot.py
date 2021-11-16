@@ -62,7 +62,9 @@ async def on_message(message):
     game = games_dict.get(message.channel.id, None)
     
     if message_text == '--help':
-        await message.channel.send("**Commands:** \n--game [variant] [@opponent] (start a game, you play as white)"
+        await message.channel.send("**Commands:**"
+                                   "\n--fen [variant] [fen] (displays a FEN)"
+                                   "\n--game [variant] [@opponent] (start a game, you play as white)"
                                    "\n--move"
                                    "\n--display (displays position information)"
                                    "\n--offerdraw"
@@ -70,7 +72,6 @@ async def on_message(message):
                                    "\n--resign"
                                    "\n--asktakeback"
                                    "\n--accepttakeback"
-                                   "\n--fen"
                                    "\nAliases: --g, --m, --d, --od, --ad --tb, --atb"
                                    "\n\n**Available variants:** \n" + (', ').join(allowed_variants)
                                    )
