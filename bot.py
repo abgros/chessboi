@@ -70,18 +70,50 @@ async def on_message(message):
                                    "\n--resign"
                                    "\n--asktakeback"
                                    "\n--accepttakeback"
+                                   "\n--fen"
                                    "\nAliases: --g, --m, --d, --od, --ad --tb, --atb"
                                    "\n\n**Available variants:** \n" + (', ').join(allowed_variants)
                                    )
         return
 
+    if message_text.startswith('--fen '):
+        variant = message_text.split()[1]
+        input_fen = ' '.join(message_text.split()[2:])
+
+        if variant not in allowed_variants:
+            await message.channel.send("Variant not recognized.")
+            return
+        
+        if sf.validate_fen(input_fen, "chess") != sf.FEN_OK:
+            await message.channel.send("Invalid FEN.")
+            return
+
+        position = Game(variant)
+        position.fen = sf.get_fen(variant, input_fen, [])
+        
+        img_name = 'fen_' + str(message.channel.id) + '.png'
+
+        await message.channel.send("**POSITION DISPLAY**")
+        await message.channel.send(file=discord.File(position.render(img_name)))
+        
+        output = (f"It's **{position.turn()}** to move."
+                  f"\nFEN: {position.fen}")
+
+        if variant == 'chess':
+            analysis_link = 'https://lichess.org/analysis/standard/' + position.fen.replace(' ', '_')
+            output += f"\nAnalyze position: {analysis_link}"
+        
+        await message.channel.send(output)
+        del position
+        return
+        
     if message_text.startswith('--game ') or message_text.startswith('--g '):
         if game:
             await message.channel.send("There is already a game going on!")
             return
 
         try:
-            opponent = await client.fetch_user(int(findall("\d+", message_text.split()[2])[0]))      
+            opponent = str(await client.fetch_user(int(findall("\d+", message_text.split()[2])[0])))
         except:
             await message.channel.send("Opponent not found.")
             return
@@ -92,7 +124,7 @@ async def on_message(message):
             await message.channel.send("Variant not recognized.")
             return
 
-        games_dict[message.channel.id] = Game(str(message.channel.id), username, str(opponent), variant)
+        games_dict[message.channel.id] = Game(variant, username, opponent)
         game = games_dict[message.channel.id]
         img_name = 'board_' + str(message.channel.id) + '.png'
         await message.channel.send(f"Game started of: **{variant}**"
