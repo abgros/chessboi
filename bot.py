@@ -1,18 +1,25 @@
 from re import findall
 from dotenv import load_dotenv
 from classes import Game
+import engine_interface as ei
 
 import os
 import discord
 import pyffish as sf
 
 load_dotenv()
+
 TOKEN = os.getenv('DISCORD_TOKEN')
+BOT_NAME = os.getenv('BOT_NAME')
+ENGINE_LOCATION = os.getenv('ENGINE_LOCATION')
+VARIANTS_LOCATION = os.getenv('VARIANTS_LOCATION')
+MOVETIME = int(os.getenv('ENGINE_MOVETIME'))
 
 client = discord.Client(activity=discord.Game(name='--help'))
-games_dict = {}
+games_dict = {} # channelid: game info
+bot_playing_in = {} # channelid: bot skill level
 
-with open("variantsfile.txt", "r") as f:
+with open(VARIANTS_LOCATION, "r") as f:
     ini_text='\n'.join(f.readlines())
 sf.load_variant_config(ini_text)
 
@@ -43,20 +50,46 @@ async def game_over(message, result):
     return
 
 
+async def bot_makes_move(message):
+    game = games_dict[message.channel.id]
+
+    engine = ei.open_engine(ENGINE_LOCATION)
+    ei.put(engine, f"load {VARIANTS_LOCATION}")
+    ei.put(engine, f"setoption name UCI_Variant value {game.variant}")
+    ei.put(engine, f"setoption name Skill Level value {bot_playing_in[message.channel.id]}")
+    ei.put(engine, f"position startpos moves {' '.join(game.moves)}")
+    ei.put(engine, f"go movetime {MOVETIME}")
+
+    # Get engine output    
+    std_output = []
+    while True:
+        if std_output:                    
+            bestmove_found = findall('bestmove .+', std_output[-1])
+            if bestmove_found: 
+                bestmove = bestmove_found[0].split()[1]
+                engine_eval = findall("(?:cp|mate) [-]?\d+", ''.join(std_output))[-1]
+                break
+        std_output += ei.get(engine)
+
+    ei.put(engine, "quit")
+
+    await message.channel.send(f"--m {sf.get_san(game.variant, game.fen, bestmove)}"
+                               f"\nEngine eval: **{engine_eval}**"
+                               )
+    return
+
+
 @client.event
 async def on_ready():
     guilds = await client.fetch_guilds(limit=150).flatten()
     print(f"{client.user} is connected to the following guilds:")
     for guild in guilds:
         print(f"{guild.name} [{guild.id}]")
-    print('')
+    print()
 
 
 @client.event
 async def on_message(message):
-    if message.author == client.user:
-        return
-
     message_text = str(message.content)
     username = str(message.author)
     game = games_dict.get(message.channel.id, None)
@@ -64,7 +97,7 @@ async def on_message(message):
     if message_text == '--help':
         await message.channel.send("**Commands:**"
                                    "\n--fen [variant] [fen] (displays a FEN)"
-                                   "\n--game [variant] [@opponent] (start a game, you play as white)"
+                                   "\n--game [variant] [@opponent] [white/black] (start a game)"
                                    "\n--move"
                                    "\n--display (displays position information)"
                                    "\n--offerdraw"
@@ -109,6 +142,7 @@ async def on_message(message):
         return
         
     if message_text.startswith('--game ') or message_text.startswith('--g '):
+        # Check if game can be created
         if game:
             await message.channel.send("There is already a game going on!")
             return
@@ -120,18 +154,38 @@ async def on_message(message):
             return
         
         variant = message_text.split()[1]
-
         if variant not in allowed_variants:
             await message.channel.send("Variant not recognized.")
             return
 
-        games_dict[message.channel.id] = Game(variant, username, opponent)
+        # Create game
+        if 'black' in message_text.split():
+            games_dict[message.channel.id] = Game(variant, opponent, username)
+        else:
+            games_dict[message.channel.id] = Game(variant, username, opponent)
+        
         game = games_dict[message.channel.id]
+
+        # Set bot skill
+        if game.player_is_playing(BOT_NAME):
+            if findall('skill=(-?\d+)', message_text):
+                level = int(findall('skill=(-?\d+)', message_text)[0])
+                if level > 20 or level < -20:
+                    level = 20
+            else:
+                level = 0
+            bot_playing_in[message.channel.id] = level
+
+        # Create image
         img_name = 'board_' + str(message.channel.id) + '.png'
         await message.channel.send(f"Game started of: **{variant}**"
                                    f"\nOpponents: **{game.wplayer}** vs **{game.bplayer}**"
                                    )
         await message.channel.send(file=discord.File(game.render(img_name)))
+
+        if game.player_turn(BOT_NAME):
+            await bot_makes_move(message)
+            
         return
 
     if message_text.startswith('--move ') or message_text.startswith('--m '):
@@ -164,6 +218,9 @@ async def on_message(message):
                 
                 img_name = 'board_' + str(message.channel.id) + '.png'
                 await message.channel.send(file=discord.File(game.render(img_name)))
+
+                if game.player_turn(BOT_NAME) and not result:
+                    await bot_makes_move(message)
                 return
             
             await message.channel.send("Invalid move.")
@@ -210,6 +267,10 @@ async def on_message(message):
             if not game.w_offered_draw:
                 game.w_offered_draw = True
                 await message.channel.send("White offers a draw!")
+
+                if game.player_is_playing(BOT_NAME) and username != BOT_NAME:
+                    await message.channel.send("--ad")
+                    
                 return
             await message.channel.send("You already offered a draw.")
             return
@@ -218,6 +279,10 @@ async def on_message(message):
             if not game.b_offered_draw:
                 game.b_offered_draw = True
                 await message.channel.send("Black offers a draw!")
+
+                if game.player_is_playing(BOT_NAME) and username != BOT_NAME:
+                    await message.channel.send("--ad")
+                    
                 return
             await message.channel.send("You already offered a draw.")
             return
@@ -256,6 +321,10 @@ async def on_message(message):
             if not game.w_offered_takeback:
                 game.w_offered_takeback = True
                 await message.channel.send("White asks for a takeback!")
+
+                if game.player_is_playing(BOT_NAME) and username != BOT_NAME:
+                    await message.channel.send("--atb")
+                    
                 return
             await message.channel.send("You already offered a takeback.")
             return
@@ -264,6 +333,10 @@ async def on_message(message):
             if not game.b_offered_takeback:
                 game.b_offered_takeback = True
                 await message.channel.send("Black asks for a takeback!")
+
+                if game.player_is_playing(BOT_NAME) and username != BOT_NAME:
+                    await message.channel.send("--atb")
+                    
                 return
             await message.channel.send("You already offered a takeback.")
             return
@@ -293,6 +366,9 @@ async def on_message(message):
         await message.channel.send("No takeback requests active.")
         return
 
+    if client.user.mentioned_in(message):
+        await message.channel.send("hello! :)")
+    
 
 @client.event
 async def on_error(event, *args, **kwargs):
