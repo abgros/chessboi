@@ -1,0 +1,173 @@
+[mounted]
+maxRank = 7
+maxFile = 7
+pieceDrops = true
+capturesToHand = true
+stalemateValue = loss
+nFoldValue = loss
+extinctionValue = loss
+extinctionPseudoRoyal = true
+extinctionPieceTypes = k
+flagPiece = k
+whiteFlag = *7
+blackFlag = *1
+centaur = k
+bishop = b
+rook = r
+cannon = c
+commoner = s
+customPiece1 = a:mBcpB 
+startFen = c1bkr1a/2sss2/7/7/7/2SSS2/C1BKR1A w - - 0 1
+
+[chennis]
+maxRank = 7
+maxFile = 7
+mobilityRegionWhiteKing = b1 c1 d1 e1 f1 b2 c2 d2 e2 f2 b3 c3 d3 e3 f3 b4 c4 d4 e4 f4
+mobilityRegionBlackKing = b4 c4 d4 e4 f4 b5 c5 d5 e5 f5 b6 c6 d6 e6 f6 b7 c7 d7 e7 f7
+customPiece1 = p:fmWfceF
+cannon = c
+commoner = m
+fers = f
+soldier = s
+king = k
+bishop = b
+knight = n
+rook = r
+promotionPieceTypes = -
+promotedPieceType = p:r f:c s:b m:n
+promotionRank = 1
+startFen = p1m1s1f/1k5/7/7/7/5K1/F1S1M1P[] w - 0 1
+pieceDrops = true
+capturesToHand = true
+pieceDemotion = true
+mandatoryPiecePromotion = true
+dropPromoted = true
+castling = false
+
+[twokings:chess]
+commoner = k
+extinctionValue = loss
+extinctionPseudoRoyal = true
+extinctionPieceTypes = k
+extinctionPieceCount = 1
+startFen = rnbkkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBKKBNR w - - 0 1
+
+[racingchess:chess]
+flagPiece = k
+whiteFlag = *8
+blackFlag = *1
+flagMove = true
+checking = false
+
+[checklesszh:crazyhouse]
+dropChecks = False
+
+[dragonfly:chess]
+maxFile = 7
+maxRank = 7
+pocketSize = 7
+castlingKingsideFile = f
+castlingQueensideFile = b
+capturesToHand = true
+promotionRank = 7
+promotionPieceTypes = nbr
+doubleStep = false
+dropNoDoubled = p
+dropNoDoubledCount = 0
+flagPiece = k
+whiteFlag = *7
+blackFlag = *1
+startFen = rbbknnr/ppppppp/7/7/7/PPPPPPP/RBBKNNR[] w - - 0 1
+
+[pandemonium]
+pieceToCharTable = PNBRFSA.UV.++++++++.++Kpnbrfsa.uv.++++++++.++k
+maxFile = 9
+maxRank = 9
+pocketSize = 9
+startFen = rnbsksbnr/2+f1+u1+a2/p1p1p1p1p/4v4/9/4V4/P1P1P1P1P/2+F1+U1+A2/RNBSKSBNR[] w - - 0 1
+customPiece1 = o:NA
+customPiece2 = s:WF
+customPiece3 = u:D
+customPiece4 = w:DWF
+cast = false
+pieceDrops = true
+capturesToHand = true
+immobilityIllegal = true
+soldier = p
+knight = n
+bishop = b
+rook = r
+king = k
+queen = q
+commoner = g
+dragonHorse = h
+bers = d
+alfil = a
+archbishop = c
+chancellor = m
+fers = f
+wazir = v
+centaur = t
+promotionRank = 7
+promotedPieceType = p:g n:o b:h r:d a:c v:m f:q s:w u:t
+doubleStep = false
+perpetualCheckIllegal = true
+nMoveRule = 0
+nFoldValue = loss
+stalemateValue = loss
+
+[shinobimirror:crazyhouse]
+commoner = c
+bers = d
+archbishop = j
+fers = m
+shogiKnight = h
+lance = l
+promotionRank = 7
+promotionPieceTypes = -
+promotedPieceType = p:c m:b h:n l:r
+mandatoryPiecePromotion = true
+stalemateValue = loss
+perpetualCheckIllegal = true
+startFen = lh1ck1hl/pppppppp/8/8/8/8/PPPPPPPP/LH1CK1HL[LHMMDJlhmmdj] w - 0 1
+capturesToHand = false
+whiteDropRegion = *1 *2 *3 *4
+blackDropRegion = *5 *6 *7 *8
+immobilityIllegal = true
+flagPiece = k
+whiteFlag = *8
+blackFlag = *1
+castling = false
+
+[chak]
+maxRank = 9
+maxFile = 9
+rook = r
+knight = v
+centaur = j
+immobile = o
+customPiece1 = b:FvW
+customPiece2 = q:pQ
+customPiece3 = d:mQ2cQ2
+customPiece4 = p:fsmWfceF
+customPiece5 = k:WF
+customPiece6 = w:FvW
+startFen = rvbqkjbvr/4o4/p1p1p1p1p/9/9/9/P1P1P1P1P/4O4/RVBJKQBVR w - - 0 1
+mobilityRegionWhiteCustomPiece6 = *5 *6 *7 *8 *9
+mobilityRegionWhiteCustomPiece3 = *5 *6 *7 *8 *9
+mobilityRegionBlackCustomPiece6 = *1 *2 *3 *4 *5
+mobilityRegionBlackCustomPiece3 = *1 *2 *3 *4 *5
+promotionRank = 5
+promotionPieceTypes = -
+mandatoryPiecePromotion = true
+promotedPieceType = p:w k:d
+extinctionValue = loss
+extinctionPieceTypes = kd
+extinctionPseudoRoyal = true
+flagPiece = d
+whiteFlag = e8
+blackFlag = e2
+nMoveRule = 50
+nFoldRule = 3
+nFoldValue = draw
+stalemateValue = win
