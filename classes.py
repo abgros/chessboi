@@ -62,7 +62,7 @@ class Game():
         return (variant in flip_variants_list)
 
     def render(self, img_name):
-        upside_down = self.turn() == "Black"
+        upside_down = self.turn() == 'Black'
         flip_pieces = self.flip_variant(self.variant) and upside_down
         lastmove = self.moves[-1] if self.moves else None
         
@@ -116,6 +116,16 @@ class Game():
 
     def update_fen(self):
         self.fen = sf.get_fen(self.variant, sf.start_fen(self.variant), self.moves)
+
+    def player_is_playing(self, player_name):
+        return player_name in (self.wplayer, self.bplayer)
+    
+    def player_turn(self, player_name):
+        if self.wplayer == player_name and self.turn() == 'White':
+            return True
+        elif self.bplayer == player_name and self.turn() == 'Black':
+            return True
+        return False
     
     def ended(self):
         uci_legal_moves = sf.legal_moves(self.variant, self.fen, [])
