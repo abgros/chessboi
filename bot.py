@@ -105,14 +105,15 @@ async def on_message(message):
         output = ("**Commands:**"
                   "\n--fen [variant] [fen] (displays a FEN)"
                   "\n--game [variant] [@opponent] [white/black] [fen='{fen}'] [skill=(-20,20)] (starts a game)"
-                  "\n--move"
-                  "\n--premove"
-                  "\n--display (displays position information)"
+                  "\n--move [move]"
+                  "\n--premove [move]"
+                  "\n--display"
                   "\n--offerdraw"
                   "\n--acceptdraw"
                   "\n--resign"
                   "\n--asktakeback"
                   "\n--accepttakeback"
+                  "\n--eval"
                   "\nAliases: --g, --m, --pm, --d, --od, --ad --tb, --atb"
                   "\n\n**Available variants:** \n" + (', ').join(allowed_variants))
         
