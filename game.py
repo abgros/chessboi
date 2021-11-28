@@ -72,18 +72,24 @@ class Game:
         return img_name
 
     def closest_san(self, input_move):
-        legal = self.legal_moves()
-        legal_lower = [move.lower() for move in legal]
-        input_lower = input_move.lower()
+        legal = self.legal_moves() # All legal moves, in SAN format
 
-        # Try to find a unique move, case insensitive
-        if sum(i.startswith(input_lower) for i in legal_lower) == 1:
-            return legal[legal_lower.index([i for i in legal_lower if i.startswith(input_lower)][0])]
+        match_casesens = [m for m in legal if m == input_move]
+        if len(match_casesens) == 1:
+            return match_casesens[0]
 
-        # Try to find a unique move, original case
-        if sum(i.startswith(input_move) for i in legal) == 1:
-            return legal[legal.index([i for i in legal if i.startswith(input_move)][0])]
+        prefix_casesens = [m for m in legal if m.startswith(input_move)]
+        if len(prefix_casesens) == 1:
+            return prefix_casesens[0]
 
+        match_lower = [m for m in legal if m.lower() == input_move.lower()]
+        if len(match_lower) == 1:
+            return match_lower[0]
+        
+        prefix_lower = [m for m in legal if m.lower().startswith(input_move.lower())]
+        if len(prefix_lower) == 1:
+            return prefix_lower[0]
+        
         return None
     
     def make_move(self, san_move):
@@ -104,8 +110,8 @@ class Game:
     def get_moves(self):
         return sf.get_san_moves(self.variant, self.startpos, self.moves)
 
-    def takeback_move(self):
-        self.moves = self.moves[:-2]
+    def takeback_move(self, count):
+        self.moves = self.moves[:-count]
         self.cancel_offers()
         self.update_fen()
         
