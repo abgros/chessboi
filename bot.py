@@ -231,24 +231,24 @@ async def on_message(message):
             await game_over(message, game.ended())
             return
 
-        await message.channel.send(f"**{game.turn(opposite=True)}** made move: **{move}**")
+        output = f"**{game.turn(opposite=True)}** made move: **{move}**"
 
         # Execute premove
         if game.premove:
             premove = game.closest_san(game.premove)
+            game.premove = None
 
             # Check if premove can be made
             if not premove:
-                await message.channel.send("Premove not made.")
+                output += "\nPremove not made."
             else:            
                 game.make_move(premove)
                 if game.ended():
                     await game_over(message, game.ended())
                     return
-                await message.channel.send(f"**{game.turn(opposite=True)}** premoved: {premove}")
+                output += f"\n**{game.turn(opposite=True)}** premoved: {premove}"
 
-            game.premove = None
-
+        await message.channel.send(output)
         await display_board(message, game, prefix='board_')
 
         # Bot move (bot doesn't premove)
@@ -324,6 +324,7 @@ async def on_message(message):
                 return
             
             game.w_offered_draw = True
+            
             await message.channel.send("White offers a draw!")
 
             if game.player_is_playing(BOT_NAME) and username != BOT_NAME:
@@ -338,6 +339,7 @@ async def on_message(message):
                 return
             
             game.b_offered_draw = True
+            
             await message.channel.send("Black offers a draw!")
 
             if game.player_is_playing(BOT_NAME) and username != BOT_NAME:
@@ -415,13 +417,15 @@ async def on_message(message):
             return
             
         if username == game.wplayer and game.b_offered_takeback:
-            await message.channel.send("White has granted a takeback: the last two moves have been undone.")
-            game.takeback_move()
+            game.takeback_move(1 + (game.turn() == "Black")) # take back requester's last move
+
+            await message.channel.send(f"White has granted a takeback: Black's last move has been undone.")
             return
         
         if username == game.bplayer and game.w_offered_takeback:
-            await message.channel.send("Black has granted a takeback: the last two moves have been undone.")
-            game.takeback_move()
+            game.takeback_move(1 + (game.turn() == "White")) # take back requester's last move
+            
+            await message.channel.send(f"Black has granted a takeback: White's last move has been undone.")
             return
         
         await message.channel.send("No takeback requests active.")
@@ -430,12 +434,13 @@ async def on_message(message):
     if message_text == '--eval':
         # Get a best move from Fairy-Stockfish
         engine = Engine(ENGINE_LOCATION, VARIANTS_LOCATION, game.variant, game.bot_skill)
-        if username == ADMIN_NAME: # admins get more stockfish power :)
+        if username == ADMIN_NAME: # admin gets more stockfish power :)
             engine.allocate(threads=11, memory=256)
             engine_eval = engine.analyze(game.startpos, game.moves, MOVETIME*10)[1]
         else:
             engine_eval = engine.analyze(game.startpos, game.moves, MOVETIME)[1]
         engine.quit()
+        
         await message.channel.send(f"Position eval: ||**{engine_eval}**||")
         return
 
