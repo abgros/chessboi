@@ -48,21 +48,31 @@ class DrawBoard:
             colour = "b"
         else:
             colour = "w"
-        return Image.open(f'assets\\{folder}\\{colour}{piece}.png').convert('RGBA')
+            
+        try:
+            return Image.open(f'assets\\{folder}\\{colour}{piece}.png').convert('RGBA')
+        except:
+            return Image.open(f'assets\\fail.png').convert('RGBA')
 
     def fen_to_array(self, fen, upside_down):
-        output = [self.flatten([[""]*int(i) if i.isnumeric() else i for i in rank]) for rank in [findall('(\d+|\+?[a-zA-Z])', i) for i in fen.split(' ')[0].split('[')[0].split('/')]]
+        fen_array = [findall('(\d+|\+?[a-zA-Z]\~?)', i) for i in fen.split(' ')[0].split('[')[0].split('/')]
+
+        for i in range(len(fen_array)):
+            rank = [[""]*int(j) if j.isnumeric() else j for j in fen_array[i]]
+            fen_array[i] = self.flatten(rank)
+            
         if upside_down:
-            output = [i[::-1] for i in output][::-1]
-        return output
+            fen_array = [i[::-1] for i in fen_array][::-1]
+            
+        return fen_array
 
     def in_hand(self, fen):
         try:
             pocket = fen.split('[')[1].split(']')[0]
         except:
             return ([], [])
-        blackpcs = sorted([p for p in pocket if p.lower() == p])
-        whitepcs = sorted([p for p in pocket if p.lower() != p])
+        blackpcs = sorted([p for p in pocket if p.islower()])
+        whitepcs = sorted([p for p in pocket if p.isupper()])
         return (whitepcs, blackpcs)
 
     def render_board(self):
