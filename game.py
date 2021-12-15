@@ -10,6 +10,7 @@ VARIANTS = {'chess':            ('chess', 'checkerboard', False),
             'grand':            ('chess', 'checkerboard', False),
             'racingchess':      ('chess', 'checkerboard', False),
             'twokings':         ('chess', 'checkerboard', False),
+            
             'chak':             ('chak', 'custom', False),
             'chennis':          ('chennis', 'custom', False),
             'makrukhouse':      ('makruk', (239, 170, 86), False),
@@ -37,7 +38,7 @@ class Game:
         self.active = True
 
     def variants_list(self):
-        return VARIANTS.keys()
+        return sorted(VARIANTS.keys())
     
     def age_minutes(self):
         return round((time()-self.start)/60, 2)
