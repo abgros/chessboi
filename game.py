@@ -3,24 +3,42 @@ from time import time
 
 import pyffish as sf
 
+# Variant: (folder, board type, flip pieces)
+VARIANTS = {'chess':            ('chess', 'checkerboard', False),
+            'dragonfly':        ('chess', 'checkerboard', False),
+            'extinction':       ('chess', 'checkerboard', False),
+            'grand':            ('chess', 'checkerboard', False),
+            'racingchess':      ('chess', 'checkerboard', False),
+            'twokings':         ('chess', 'checkerboard', False),
+            'chak':             ('chak', 'custom', False),
+            'chennis':          ('chennis', 'custom', False),
+            'makrukhouse':      ('makruk', (239, 170, 86), False),
+            'mounted':          ('mounted', 'custom', False),
+            'pandemonium':      ('pandemonium', [(168, 200, 224), (192, 240, 255)], True),
+            'shinobimirror':    ('shinobimirror', 'checkerboard', False)
+            }
 
 class Game:
     def __init__(self, variant='chess', wplayer=None, bplayer=None, startpos=None):
         self.variant = variant
         self.wplayer = wplayer
         self.bplayer = bplayer
-        self.moves = []
         self.start = time()
+        self.moves = []
         self.w_offered_draw = False
         self.b_offered_draw = False
         self.w_offered_takeback = False
         self.b_offered_takeback = False
         self.bot_skill = 0
         self.premove = None
-        self.custom_fen = startpos is not None
+        self.custom_fen = startpos and (startpos != sf.start_fen(variant))
         self.startpos = startpos if self.custom_fen else sf.start_fen(variant)
         self.fen = self.startpos
-        
+        self.active = True
+
+    def variants_list(self):
+        return VARIANTS.keys()
+    
     def age_minutes(self):
         return round((time()-self.start)/60, 2)
 
@@ -29,37 +47,13 @@ class Game:
         return ["Black", "White"][white_to_move != opposite] # logical XOR
 
     def get_folder(self, variant):
-        return {'chess': 'chess',
-                'extinction': 'chess',
-                'twokings': 'chess',
-                'racingchess': 'chess',
-                'checklesszh': 'chess',
-                'dragonfly': 'chess',
-
-                'pandemonium': 'pandemonium',
-                'chennis': 'chennis',
-                'mounted': 'mounted',
-                'shinobimirror': 'shinobimirror',
-                'chak': 'chak'
-                }[variant]
+        return VARIANTS[variant][0]
 
     def board_type(self, variant):
-        return {'chess': 'checkerboard',
-                'extinction': 'checkerboard',
-                'twokings': 'checkerboard',
-                'racingchess': 'checkerboard',
-                'checklesszh': 'checkerboard',
-                'dragonfly': 'checkerboard',
-                'shinobimirror': 'checkerboard',
-
-                'pandemonium': [(168, 200, 224), (192, 240, 255)],
-                'chennis': 'custom',
-                'chak': 'custom',
-                'mounted': [(153, 174, 194), (97, 122, 142)]
-                }[variant]
+        return VARIANTS[variant][1]
 
     def flip_variant(self, variant):
-        return variant in ['pandemonium'] # currently, only one variant
+        return VARIANTS[variant][2]
 
     def render(self, img_name):
         upside_down = self.turn() == 'Black'
