@@ -1,7 +1,7 @@
 import os
 import discord
 import pyffish as sf
-from tinydb import TinyDB, Query
+import tinydb
 from re import findall
 from dotenv import load_dotenv
 from random import randint
@@ -21,25 +21,41 @@ VARIANTS_LOCATION = os.getenv('VARIANTS_LOCATION')
 MOVETIME = int(os.getenv('ENGINE_MOVETIME'))
 
 client = discord.Client(activity=discord.Game(name='--help'))
-games_dict = {} # {channelid: game info}
+games_dict = {}
+allowed_variants = Game().variants_list()
+
+db = tinydb.TinyDB('saved_games.json')
+for game_records in db: # only 1 entry in DB
+    for channel, saved_game in game_records.items():
+        game = Game()
+        game.__dict__ = saved_game
+        games_dict[int(channel)] = game
 
 with open(VARIANTS_LOCATION, "r") as f:
     ini_text='\n'.join(f.readlines())
 sf.load_variant_config(ini_text)
 
-allowed_variants = ['chess', 'checklesszh', 'racingchess', 'dragonfly', 'shinobimirror',
-                    'chennis', 'extinction', 'mounted', 'twokings', 'pandemonium', 'chak']
 
-db = TinyDB('saved_games.json')
-for game_records in db: # only 1 entry in DB
-    for channel in game_records:
-        game = Game()
-        game.__dict__ = game_records[channel]
-        games_dict[int(channel)] = game
+def decriptive_eval(engine_eval, white_to_play):
+    sides = ["White", "Black"]
+    player = sides[not white_to_play]
+    opp = sides[white_to_play]
+    
+    if engine_eval == "cp 0":
+        return "Eval: 0.00 (dead even)"
+    elif engine_eval == "mate 0":
+        return f"Eval: Checkmate. **{opp}** has won!"
+    elif engine_eval.split()[0] == "mate":
+        moves = int(engine_eval.split()[1])
+        return f"Eval: Mate in **{abs(moves)}** for **{player if moves > 0 else opp}**."
+    else:
+        cp = int(engine_eval.split()[1])/100 * (2 * white_to_play - 1) # invert cp if black to play
+        return f"Eval: **{'{0:+.2f}'.format(cp)}** (**{sides[0] if cp > 0 else sides[1]}** is better)."
 
 
 async def game_over(message, result):
     game = games_dict[message.channel.id]
+    game.active = False
 
     result_text, result_code = {'White': (f"{game.wplayer} wins.", "1-0"),
                                 'Black': (f"{game.bplayer} wins.", "0-1"),
@@ -55,7 +71,6 @@ async def game_over(message, result):
     await message.channel.send(output)
     await display_board(message, game, prefix='board_')
     
-    del games_dict[message.channel.id]
     return
 
 
@@ -76,7 +91,7 @@ async def bot_makes_move(message):
         await message.channel.send("--resign") 
         return
     
-    await message.channel.send(f"--m {sf.get_san(game.variant, game.fen, bestmove)} ||**{engine_eval}**||")
+    await message.channel.send(f"--m {sf.get_san(game.variant, game.fen, bestmove)} ||{decriptive_eval(engine_eval, game.turn() == 'White')}||")
     return
 
 
@@ -105,6 +120,7 @@ async def on_message(message):
         output = ("**Commands:**"
                   "\n--fen [variant] [fen] (displays a FEN)"
                   "\n--game [variant] [@opponent] [white/black] [fen='{fen}'] [skill=(-20,20)] (starts a game)"
+                  "\n--rematch"
                   "\n--move [move]"
                   "\n--premove [move]"
                   "\n--display"
@@ -114,7 +130,7 @@ async def on_message(message):
                   "\n--asktakeback"
                   "\n--accepttakeback"
                   "\n--eval"
-                  "\nAliases: --g, --m, --pm, --d, --od, --ad --tb, --atb"
+                  "\nAliases: --g, --rm, --m, --pm, --d, --od, --ad --tb, --atb"
                   "\n\n**Available variants:** \n" + (', ').join(allowed_variants))
         
         await message.channel.send(output)
@@ -124,18 +140,21 @@ async def on_message(message):
         variant = message_text.split()[1]
         input_fen = ' '.join(message_text.split()[2:])
 
-        # Validate FEN
+        # Validate variant
         if variant not in allowed_variants:
             await message.channel.send("Variant not recognized.")
             return
-        
-        if sf.validate_fen(input_fen, variant) != sf.FEN_OK:
-            await message.channel.send("Invalid FEN.")
-            return
+
+        # Validate FEN
+        if not input_fen:
+            input_fen = sf.start_fen(variant)
+        else:
+            if sf.validate_fen(input_fen, variant) != sf.FEN_OK:
+                await message.channel.send("Invalid FEN.")
+                return
 
         # Create a dummy game
-        position = Game(variant)
-        position.fen = sf.get_fen(variant, input_fen, [])
+        position = Game(variant, startpos=sf.get_fen(variant, input_fen, []))
         
         await message.channel.send("**POSITION DISPLAY**")
         await display_board(message, position, prefix='fen_')
@@ -154,22 +173,24 @@ async def on_message(message):
         
     if message_text.startswith('--game ') or message_text.startswith('--g '):
         # Check if game can be created
-        if game:
+        if game and game.active:
             await message.channel.send("There is already a game going on!")
             return
 
+        # Validate opponent
         try:
             opponent = str(await client.fetch_user(int(findall("\d+", message_text.split()[2])[0])))
         except:
             await message.channel.send("Opponent not found.")
             return
-        
+
+        # Validate variant
         variant = message_text.split()[1]
         if variant not in allowed_variants:
             await message.channel.send("Variant not recognized.")
             return
 
-        # Custom starting position
+        # Starting position
         fen_search = findall("fen=[\"|\']([^\"\']*)[\"|\']", message_text)
         if fen_search:
             input_fen = fen_search[0]       
@@ -179,7 +200,7 @@ async def on_message(message):
                 await message.channel.send("Invalid FEN.")
                 return
         else:
-            start_fen = None
+            start_fen = sf.start_fen(variant)
 
         # Create game
         # if side is not specified, choose randomly
@@ -201,7 +222,7 @@ async def on_message(message):
                 game.bot_skill = max(min(int(skill_search[0]), 20), -20) # level must be -20 to 20
             
         # Send image
-        await message.channel.send(f"Game started of: **{variant}**"
+        await message.channel.send(f"Game started of: **{game.variant}**"
                                    f"\nOpponents: **{game.wplayer}** vs **{game.bplayer}**")
         await display_board(message, game, prefix='board_')
 
@@ -209,9 +230,33 @@ async def on_message(message):
             await bot_makes_move(message)
         return
 
+    if message_text in ('--rematch', '--rm'):      
+        if game and game.active:
+            await message.channel.send("There is already a game going on!")
+            return
+
+        # Check if player was in previous match
+        if not (game and username in (game.wplayer, game.bplayer)):
+            await message.channel.send("You must Match before you can Rematch.")
+            return
+
+        # Create a new game based on the last one to be played
+        prev_bot_skill = game.bot_skill
+        games_dict[message.channel.id] = Game(game.variant, game.bplayer, game.wplayer, game.startpos) # Reverse black & white
+        game = games_dict[message.channel.id]
+        game.bot_skill = prev_bot_skill
+        
+        await message.channel.send(f"Game started of: **{game.variant}**"
+                                   f"\nOpponents: **{game.wplayer}** vs **{game.bplayer}**")
+        await display_board(message, game, prefix='board_')
+
+        if game.player_turn(BOT_NAME):
+            await bot_makes_move(message)
+        return
+    
     if message_text.startswith('--move ') or message_text.startswith('--m '):
         # Check if move can be made
-        if not game:
+        if not (game and game.active):
             await message.channel.send("No game is active.")
             return
             
@@ -260,7 +305,7 @@ async def on_message(message):
         await sleep(2) # otherwise stuff breaks
 
         # Check if premove can be made
-        if not game:
+        if not (game and game.active):
             await message.channel.send("No game is active.")
             return
             
@@ -280,7 +325,7 @@ async def on_message(message):
         return
     
     if message_text in ('--display', '--d'):
-        if not game:
+        if not (game and game.active):
             await message.channel.send("No game is active.")
             return
         
@@ -298,7 +343,7 @@ async def on_message(message):
         return
 
     if message_text == '--resign':
-        if not game:
+        if not (game and game.active):
             await message.channel.send("No game is active.")
             return
         
@@ -314,7 +359,7 @@ async def on_message(message):
         return
 
     if message_text in ('--offerdraw', '--od'):
-        if not game:
+        if not (game and game.active):
             await message.channel.send("No game is active.")
             return
         
@@ -351,7 +396,7 @@ async def on_message(message):
         return
 
     if message_text in ('--acceptdraw', '--ad'):
-        if not game:
+        if not (game and game.active):
             await message.channel.send("No game is active.")
             return
         
@@ -373,7 +418,7 @@ async def on_message(message):
         return
 
     if message_text in ('--asktakeback', '--tb'):
-        if not game:
+        if not (game and game.active):
             await message.channel.send("No game is active.")
             return
         
@@ -408,7 +453,7 @@ async def on_message(message):
         return
 
     if message_text in ('--accepttakeback', '--atb'):
-        if not game:
+        if not (game and game.active):
             await message.channel.send("No game is active.")
             return
         
@@ -432,16 +477,20 @@ async def on_message(message):
         return
 
     if message_text == '--eval':
+        if not (game and game.active):
+            await message.channel.send("No game is active.")
+            return
+        
         # Get a best move from Fairy-Stockfish
         engine = Engine(ENGINE_LOCATION, VARIANTS_LOCATION, game.variant, game.bot_skill)
-        if username == ADMIN_NAME: # admin gets more stockfish power :)
+        if username == ADMIN_NAME: # admin gets more stockfish power
             engine.allocate(threads=11, memory=256)
             engine_eval = engine.analyze(game.startpos, game.moves, MOVETIME*10)[1]
         else:
             engine_eval = engine.analyze(game.startpos, game.moves, MOVETIME)[1]
         engine.quit()
         
-        await message.channel.send(f"Position eval: ||**{engine_eval}**||")
+        await message.channel.send(f"||{decriptive_eval(engine_eval, game.turn() == 'White')}||")
         return
 
     # Admin commands
@@ -456,7 +505,7 @@ async def on_message(message):
             await message.channel.send(game.__dict__)
         return
 
-    if client.user.mentioned_in(message) and message.author != client.user:
+    if str(client.user.id) in message_text and message.author != client.user:
         await message.channel.send("hello! :)")
         return
     
