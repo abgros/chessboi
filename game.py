@@ -77,8 +77,9 @@ class Game:
 		folder = VARIANTS[self.variant].folder
 		board_type = VARIANTS[self.variant].board_type
 		intersections = VARIANTS[self.variant].intersections
+		invert_text = VARIANTS[self.variant].invert_text
 
-		DrawBoard(board_type, folder, flip_pieces, upside_down, intersections,
+		DrawBoard(board_type, folder, flip_pieces, upside_down, intersections, invert_text,
 				self.fen, lastmove).render_board(img_name)
 
 		return img_name
@@ -94,10 +95,11 @@ class Game:
 		board_type = VARIANTS[self.variant].board_type
 		folder = VARIANTS[self.variant].folder
 		intersections = VARIANTS[self.variant].intersections
+		invert_text = VARIANTS[self.variant].invert_text
 
 		# add end position
 		if len(self.moves) > 0:
-			board_img = DrawBoard(board_type, folder, flip_pieces, upside_down, intersections,
+			board_img = DrawBoard(board_type, folder, flip_pieces, upside_down, intersections, invert_text,
 								self.fen, self.moves[-1]).draw_board(stabilise_pocket=True)
 
 			frame = DrawBoard.scale_to_fit(WIDTH, HEIGHT, board_img)
@@ -105,7 +107,7 @@ class Game:
 
 		# add start position
 		curr_fen = self.startpos
-		board_img = DrawBoard(board_type, folder, flip_pieces, upside_down, intersections,
+		board_img = DrawBoard(board_type, folder, flip_pieces, upside_down, intersections, invert_text,
 							  curr_fen, lastmove).draw_board(stabilise_pocket=True)
 
 		frame = DrawBoard.scale_to_fit(WIDTH, HEIGHT, board_img)
@@ -116,7 +118,7 @@ class Game:
 			lastmove = self.moves[i]
 			curr_fen = sf.get_fen(self.variant, curr_fen, [lastmove], True)
 
-			board_img = DrawBoard(board_type, folder, flip_pieces, upside_down, intersections,
+			board_img = DrawBoard(board_type, folder, flip_pieces, upside_down, intersections, invert_text,
 								  curr_fen, lastmove).draw_board(stabilise_pocket=True)
 
 			frame = DrawBoard.scale_to_fit(WIDTH, HEIGHT, board_img)

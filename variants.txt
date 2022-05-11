@@ -1,0 +1,311 @@
+[backrank:chess]
+king = -
+commoner = k
+castlingKingPiece = k
+extinctionValue = loss
+extinctionPieceTypes = k
+extinctionPseudoRoyal = true
+flagPiece = k
+promotionPieceTypes = -
+promotedPieceType = q:k r:k b:k n:k p:k
+mandatoryPiecePromotion = true
+whiteFlag = *8
+blackFlag = *1
+
+[cetus]
+maxRank = 9
+maxFile = 9
+wazir = o
+fers = k
+customPiece1 = b:mQ3
+customPiece2 = n:mF
+customPiece3 = p:mW
+customPiece4 = h:mB3
+customPiece5 = s:mR3
+customPiece6 = d:mN
+startFen = 9/9/2b6/9/9/9/3B5/9/9[DSHPPNNOdsshhppnno] w - - 0 1
+pieceDrops = true
+extinctionValue = loss
+extinctionPieceTypes = b
+piecePromotionOnCapture = true
+mandatoryPiecePromotion = true
+pieceDemotion = true
+promotedPieceType = o:k
+castling = false
+connectN = 5
+promotionRank = 1
+
+[chak]
+maxRank = 9
+maxFile = 9
+rook = r
+knight = v
+centaur = j
+immobile = o
+customPiece1 = b:FvW
+customPiece2 = q:pQ
+customPiece3 = d:mQ2cQ2
+customPiece4 = p:fsmWfceF
+customPiece5 = k:WF
+customPiece6 = w:FvW
+startFen = rvbqkjbvr/4o4/p1p1p1p1p/9/9/9/P1P1P1P1P/4O4/RVBJKQBVR w - - 0 1
+mobilityRegionWhiteCustomPiece6 = *5 *6 *7 *8 *9
+mobilityRegionWhiteCustomPiece3 = *5 *6 *7 *8 *9
+mobilityRegionBlackCustomPiece6 = *1 *2 *3 *4 *5
+mobilityRegionBlackCustomPiece3 = *1 *2 *3 *4 *5
+promotionRank = 5
+promotionPieceTypes = -
+mandatoryPiecePromotion = true
+promotedPieceType = p:w k:d
+extinctionValue = loss
+extinctionPieceTypes = kd
+extinctionPseudoRoyal = true
+flagPiece = d
+whiteFlag = e8
+blackFlag = e2
+nMoveRule = 50
+nFoldRule = 3
+nFoldValue = draw
+stalemateValue = loss
+
+[checkmateless:chess]
+checking = false
+stalemateValue = loss
+
+[chennis]
+maxRank = 7
+maxFile = 7
+mobilityRegionWhiteKing = b1 c1 d1 e1 f1 b2 c2 d2 e2 f2 b3 c3 d3 e3 f3 b4 c4 d4 e4 f4
+mobilityRegionBlackKing = b4 c4 d4 e4 f4 b5 c5 d5 e5 f5 b6 c6 d6 e6 f6 b7 c7 d7 e7 f7
+customPiece1 = p:fmWfceF
+cannon = c
+commoner = m
+fers = f
+promotedPieceType = p:r f:c s:b m:n
+promotionRank = 1
+startFen = 1fkm3/1p1s3/7/7/7/3S1P1/3MKF1[] w - 0 1
+pieceDrops = true
+capturesToHand = true
+pieceDemotion = true
+mandatoryPiecePromotion = true
+dropPromoted = true
+castling = false
+stalemateValue = loss
+
+# Chess vs Hoppel-Poppel
+[chessvshp:chess]
+soldier = s
+king = k
+bishop = b
+knight = n
+rook = r
+promotionPieceTypes = -
+knibis = i
+biskni = j
+promotionPieceTypes = nbrqij
+startFen = rijqkjir/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
+
+# Chess with different armies
+[cwda:chess]
+promotionPieceTypes = nbrqewfahixosydc
+# COLORBOUND CLOBBERERS
+#Bede = rook
+customPiece1 = e:BD
+#Waffle = knight
+customPiece2 = w:WA
+#FAD - bishop
+customPiece3 = f:FAD
+#cardinal = queen
+archbishop = a
+# NUTTY KNIGHTS
+#Charging rook
+customPiece4 = h:frlRWbF
+#Fibnif
+customPiece5 = i:fbNF
+#Charging knight
+customPiece6 = x:fhNbFbrlW
+#Colonel
+customPiece7 = o:fhNfrlRK
+# REMARKABLE ROOKIES
+#Short rook
+customPiece8 = s:R4
+#Woody rook
+customPiece9 = y:WD
+#Half duck
+customPiece10 = d:HFD
+chancellor = c
+castling = false
+startFen = hixokxih/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 1
+# FIDE mirror 			startFen = rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 1
+# FIDE vs COLORBOUND 	startFen = ewfakfwe/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 1
+# FIDE vs KNIGHTS 		startFen = hixokxih/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 1
+# FIDE vs ROOKIES 		startFen = sydckdys/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 1
+# COLORBOUND vs FIDE	startFen = rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/EWFAKFWE w - - 0 1
+# COLORBOUND mirror 	startFen = ewfakfwe/pppppppp/8/8/8/8/PPPPPPPP/EWFAKFWE w - - 0 1
+# COLORBOUND vs KNIGHTS	startFen = hixokxih/pppppppp/8/8/8/8/PPPPPPPP/EWFAKFWE w - - 0 1
+# COLORBOUND vs ROOKIES	startFen = sydckdys/pppppppp/8/8/8/8/PPPPPPPP/EWFAKFWE w - - 0 1
+
+[dragonfly:chess]
+maxFile = 7
+maxRank = 7
+pocketSize = 7
+castlingKingsideFile = f
+castlingQueensideFile = b
+pieceDrops = true
+capturesToHand = true
+promotionRank = 7
+promotionPieceTypes = nbr
+doubleStep = false
+dropNoDoubled = p
+dropNoDoubledCount = 0
+startFen = rbbknnr/ppppppp/7/7/7/PPPPPPP/RBBKNNR[] w - - 0 1
+
+[kamikazerooks:chess]
+extinctionValue = win
+extinctionPieceTypes = r
+
+[makhouse:makruk]
+startFen = rnsmksnr/8/pppppppp/8/8/PPPPPPPP/8/RNSKMSNR[] w - - 0 1
+pieceDrops = true
+capturesToHand = true
+
+[mounted]
+maxRank = 7
+maxFile = 7
+pieceDrops = true
+capturesToHand = true
+stalemateValue = loss
+nFoldValue = loss
+extinctionValue = loss
+extinctionPseudoRoyal = true
+extinctionPieceTypes = k
+flagPiece = k
+whiteFlag = *7
+blackFlag = *1
+centaur = k
+bishop = b
+rook = r
+cannon = c
+customPiece1 = a:mBcpB
+customPiece2 = s:FsfW
+startFen = 1cbkra1/2s1s2/7/7/7/2S1S2/1CBKRA1 w - - 0 1
+
+[ordavsempire:chess]
+centaur = h
+knibis = a
+kniroo = l
+customPiece1 = e:mQcN
+customPiece2 = c:mQcB
+customPiece3 = t:mQcR
+customPiece4 = d:mQcK
+customPiece5 = y:mNcK
+promotionPieceTypes = qh
+startFen = tecdkcet/8/pppppppp/8/8/PPPPPPPP/8/LHAYKAHL w - - 0 1
+stalemateValue = loss
+nFoldValue = loss
+flagPiece = k
+whiteFlag = *8
+blackFlag = *1
+flyingGeneral = true
+
+[pandemonium]
+pieceToCharTable = PNBRFSA.UV.++++++++.++Kpnbrfsa.uv.++++++++.++k
+maxFile = 9
+maxRank = 9
+pocketSize = 9
+startFen = rnbsksbnr/2+f1+u1+a2/p1p1p1p1p/4v4/9/4V4/P1P1P1P1P/2+F1+U1+A2/RNBSKSBNR[] w - - 0 1
+customPiece1 = o:NA
+customPiece2 = s:WF
+customPiece3 = u:D
+customPiece4 = w:DWF
+cast = false
+pieceDrops = true
+capturesToHand = true
+immobilityIllegal = true
+soldier = p
+knight = n
+bishop = b
+rook = r
+king = k
+queen = q
+commoner = g
+dragonHorse = h
+bers = d
+alfil = a
+archbishop = c
+chancellor = m
+fers = f
+wazir = v
+centaur = t
+promotionRank = 7
+promotedPieceType = p:g n:o b:h r:d a:c v:m f:q s:w u:t
+doubleStep = false
+perpetualCheckIllegal = true
+nMoveRule = 0
+nFoldValue = loss
+stalemateValue = loss
+
+[racingchess:chess]
+flagPiece = k
+whiteFlag = *8
+blackFlag = *1
+flagMove = true
+checking = false
+
+[shinobimirror:crazyhouse]
+commoner = c
+bers = d
+archbishop = j
+fers = m
+shogiKnight = h
+lance = l
+promotionRank = 7
+promotionPieceTypes = -
+promotedPieceType = p:c m:b h:n l:r
+mandatoryPiecePromotion = true
+stalemateValue = loss
+perpetualCheckIllegal = true
+startFen = lh1ck1hl/pppppppp/8/8/8/8/PPPPPPPP/LH1CK1HL[LHMMDJlhmmdj] w - - 0 1
+capturesToHand = false
+whiteDropRegion = *1 *2 *3 *4
+blackDropRegion = *5 *6 *7 *8
+immobilityIllegal = true
+flagPiece = k
+whiteFlag = *8
+blackFlag = *1
+castling = false
+
+[stardust]
+maxRank = 10
+maxFile = 9
+fers = t
+immobile = p
+gold = c
+commoner = v
+customPiece1 = x:mRcW
+customPiece2 = d:FvW
+customPiece3 = r:mQ2
+customPiece4 = y:mRcD
+customPiece5 = b:mFcA
+startFen = 3tvt3/1p5p1/3XRX3/1d5d1/9/1p1t1t1p1/4d4/9/9/4C4[XXXXXYYttttttbbbd] w - - 0 1
+pieceDrops = true
+whiteDropRegion = *1 *2 *3 d4 e4 f4 d5 e5 f5 d6 e6 f6 *7 d8 e8 f8 d9 e9 f9 d10 e10 f10
+blackDropRegion = a4 b4 c4 g4 h4 i4 a5 b5 c5 g5 h5 i5 a6 b6 c6 g6 h6 i6 a8 b8 c8 g8 h8 i8 a9 b9 c9 g9 h9 i9 a10 b10 c10 g10 h10 i10
+castling = false
+extinctionValue = loss
+extinctionPieceTypes = rp
+extinctionPseudoRoyal = true
+flagPiece = r
+whiteFlag = e2
+nFoldRule = 3
+nFoldValue = draw
+stalemateValue = loss
+
+[twokings:chess]
+king = -
+commoner = k
+extinctionValue = loss
+extinctionPseudoRoyal = true
+extinctionPieceTypes = k
+extinctionPieceCount = 1
+startFen = rnbkkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBKKBNR w - - 0 1

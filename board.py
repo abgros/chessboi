@@ -5,6 +5,7 @@ DARK = (181, 136, 99)
 LIGHT = (240, 217, 181)
 GREY = (136, 136, 136)
 BLACK = (33, 33, 33)
+WHITE = (233, 233, 233)
 GREEN = (128, 216, 48, 96)
 LASTMOVE_LIGHT = (205, 210, 106)
 LASTMOVE_DARK = (170, 162, 58)
@@ -18,12 +19,13 @@ FONT_LOCATION = r'C:\Windows\Fonts\ARLRDBD.ttf'
 
 
 class DrawBoard:
-	def __init__(self, board_type, folder, flip_pieces, upside_down, intersections, fen, lastmove):
+	def __init__(self, board_type, folder, flip_pieces, upside_down, intersections, invert_text, fen, lastmove):
 		self.board_type = board_type
 		self.folder = folder
 		self.flip_pieces = flip_pieces
 		self.upside_down = upside_down
 		self.intersections = intersections
+		self.invert_text = invert_text
 		self.fen = fen
 		self.lastmove = lastmove
 
@@ -165,13 +167,18 @@ class DrawBoard:
 			r_anchor = "rt"
 			f_anchor = "ls"
 
+		if self.invert_text:
+			text_colour = WHITE
+		else:
+			text_colour = BLACK
+
 		for i in range(b_height):
 			drw.text((b_width*SQ_SIZE - font_size*0.1 - v_offset, i*SQ_SIZE + font_size*0.2 + h_offset),
-					  ranks[i], fill=(0, 0, 0), font=font, anchor=r_anchor)
+					  ranks[i], fill=text_colour, font=font, anchor=r_anchor)
 
 		for i in range(b_width):
 			drw.text((i*SQ_SIZE + font_size*0.1 + h_offset, b_height*SQ_SIZE - font_size*0.1 - v_offset),
-					  files[i], fill=(0, 0, 0), font=font, anchor=f_anchor)
+					  files[i], fill=text_colour, font=font, anchor=f_anchor)
 
 		# PIECES
 		for i in range(len(pos)):
