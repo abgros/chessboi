@@ -20,10 +20,12 @@ VARIANTS = {
 			'extinction':		Variant(rules='Win by capturing every piece of a certain type (eg. 1 queen or 2 bishops).'),
 			'grand':			Variant(rules='Chess but bigger. Hawk = B+N, Elephant = R+N. Pawns promote on the 8th rank to a captured piece.'),
 			'kamikazerooks':	Variant(),
+			'kinglet':			Variant(),
 			'makhouse':			Variant(folder='makruk', board_type=(239, 170, 86)),
 			'mounted':			Variant(folder='mounted', board_type='custom'),
-			'ordavsempire':		Variant(folder='ordavsempire', rules='Orda vs Empire army'),
-			'pandemonium':		Variant(folder='pandemonium', board_type=[(168, 200, 224), (192, 240, 255)]),
+			'ordavsempire':		Variant(folder='ordavsempire'),
+			'pandemonium':		Variant(folder='pandemonium', board_type=[(168, 200, 224), (192, 240, 255)], flip_pieces=True),
+			'parahouse':		Variant(folder='parahouse', board_type=[(200, 224, 168), (240, 255, 192)]), 
 			'racingchess':		Variant(),
 			'shinobimirror':	Variant(folder='shinobimirror'),
 			'stardust':			Variant(folder='stardust', board_type='custom', invert_text=True),
@@ -71,8 +73,8 @@ class Game:
 		return ["Black", "White"][white_to_move != opposite] # if opposite is True, white_to_move is flipped
 
 	def render(self, img_name):
-		flip_pieces = VARIANTS[self.variant].flip_pieces and upside_down
 		upside_down = self.turn() == "Black"
+		flip_pieces = VARIANTS[self.variant].flip_pieces and upside_down
 		lastmove = self.moves[-1] if self.moves else None
 		folder = VARIANTS[self.variant].folder
 		board_type = VARIANTS[self.variant].board_type

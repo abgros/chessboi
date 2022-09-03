@@ -209,7 +209,7 @@ blackFlag = *1
 flyingGeneral = true
 
 [pandemonium]
-pieceToCharTable = PNBRFSA.UV.++++++++.++Kpnbrfsa.uv.++++++++.++k
+pieceToCharTable = PNBRFSA.UV.+++++++.++Kpnbrfsa.uv.+++++++.++k
 maxFile = 9
 maxRank = 9
 pocketSize = 9
@@ -218,7 +218,7 @@ customPiece1 = o:NA
 customPiece2 = s:WF
 customPiece3 = u:D
 customPiece4 = w:DWF
-cast = false
+castling = false
 pieceDrops = true
 capturesToHand = true
 immobilityIllegal = true
@@ -244,6 +244,47 @@ perpetualCheckIllegal = true
 nMoveRule = 0
 nFoldValue = loss
 stalemateValue = loss
+flagPiece = k
+whiteFlag = *9
+blackFlag = *1
+
+[parahouse]
+variantTemplate = shogi
+pieceToCharTable = PNBR.Q.HD..++++.+.++Kpnbr.q.hd..++++.+.++k
+maxFile = 9
+maxRank = 9
+pocketSize = 7
+startFen = rnbdkhbnr/4q4/ppppppppp/9/9/9/PPPPPPPPP/4Q4/RNBHKDBNR[] w - - 0 1
+customPiece1 = a:QN
+customPiece2 = t:BNW
+customPiece3 = s:RNF
+castling = false
+capturesToHand = true
+pieceDrops = true
+dropNoDoubled = p
+immobilityIllegal = true
+shogiPawn = p
+knight = n
+bishop = b
+rook = r
+queen = q
+dragonHorse = h
+bers = d
+king = k
+commoner = g
+centaur = j
+archbishop = c
+chancellor = m
+promotionRank = 7
+promotedPieceType = p:g n:j b:c r:m q:a h:t d:s
+doubleStep = false
+perpetualCheckIllegal = true
+nMoveRule = 0
+nFoldValue = loss
+stalemateValue = loss
+flagPiece = k
+whiteFlag = *9
+blackFlag = *1
 
 [racingchess:chess]
 flagPiece = k
